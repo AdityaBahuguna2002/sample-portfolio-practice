@@ -24,6 +24,6 @@ jobs:
             aws-region: us-east-1
         
         - name: deploy static site to S3 bucket
-          run: aws s3 sync . s3://ysampleportfoliobucket  --delete --exclude ".git/*" --exclude ".github/*" --exclude "README.md" --exclude ".gitignore"
+          run: aws s3 sync . s3://mysampleportfoliobucket  --delete --exclude ".git/*" --exclude ".github/*" --exclude "README.md" --exclude ".gitignore"
                     # sync command is used to sync the files from the local system to the S3 bucket
         
