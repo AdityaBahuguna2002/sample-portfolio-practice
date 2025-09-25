@@ -1,0 +1,1212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Name — Portfolio</title>
+  <meta name="description" content="A smooth, animated static portfolio built with Tailwind CSS + GSAP" />
+
+  <!-- Tailwind CDN (for quick prototyping) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- GSAP for smooth animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" integrity="sha512-AKXxP8i0zK3D3cN2u9o3c4n6+KQq4uYI3yq1zZ8LQ1y8PqQe8x5K2gq1u4R0a2QyWq9b3QzV9o+F3LJ7k9Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- Simple icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Jd3z6kW8Z1wGQ8k0I1Y8w3QZ1T9F1s3G8s1e5b6m7n8o9p0q1r2s3t4u5v6w7x8y9z0a1b2c3d4e5f6g7h8i9j==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    /* Custom scroll behavior for smoothness */
+    html { scroll-behavior: smooth; }
+
+    /* subtle background gradient */
+    body {
+      background: radial-gradient(1000px 600px at 10% 10%, rgba(99,102,241,0.06), transparent),
+                  radial-gradient(800px 500px at 90% 90%, rgba(56,189,248,0.03), transparent),
+                  #0f172a;
+      color: rgba(255,255,255,0.95);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      transition: all 0.3s ease;
+    }
+
+    /* Light mode styles */
+    body.light-mode {
+      background: linear-gradient(180deg, #f8fafc, #e6eef8) !important;
+      color: #0f172a !important;
+    }
+
+    body.light-mode .glass {
+      background: rgba(255,255,255,0.8) !important;
+      backdrop-filter: blur(10px) !important;
+      border: 1px solid rgba(0,0,0,0.05) !important;
+    }
+
+    /* Glass card */
+    .glass { 
+      background: rgba(255,255,255,0.03); 
+      backdrop-filter: blur(6px); 
+      border: 1px solid rgba(255,255,255,0.06); 
+      transition: all 0.3s ease;
+    }
+
+    /* Floating nav shadow */
+    .floating-nav { box-shadow: 0 6px 30px rgba(2,6,23,0.6); }
+
+    /* small helper for animated underline */
+    .underline-animated { 
+      background-image: linear-gradient(90deg, #a78bfa 0%, #06b6d4 100%); 
+      background-size: 0% 3px; 
+      background-repeat: no-repeat; 
+      background-position: 0 100%; 
+      transition: background-size .35s ease; 
+    }
+    .underline-animated:hover { background-size: 100% 3px; }
+
+    /* responsive project images placeholder */
+    .project-img { height: 180px; object-fit: cover; width: 100%; border-radius: 0.5rem; }
+
+    /* Page transitions */
+    .page { display: none; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
+    .page.active { display: block; opacity: 1; transform: translateY(0); }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 3px;
+      background: linear-gradient(90deg, #a78bfa, #06b6d4);
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    /* Typing animation */
+    .typing::after {
+      content: '|';
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* Blog card hover effects */
+    .blog-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .blog-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    /* Testimonial carousel */
+    .testimonial-slide {
+      min-width: 100%;
+      transition: transform 0.5s ease;
+    }
+
+    /* Skills progress bars */
+    .skill-progress {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .skill-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #a78bfa, #06b6d4);
+      border-radius: 3px;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 1s ease;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #a78bfa, #06b6d4);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="antialiased leading-relaxed">
+
+  <!-- PROGRESS BAR -->
+  <div class="fixed top-0 left-0 w-full z-60">
+    <div id="progressBar" class="progress-bar"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav id="nav" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-5xl rounded-2xl p-3 glass floating-nav backdrop-blur-md">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-400 flex items-center justify-center text-black font-bold">YN</div>
+        <div>
+          <div class="text-sm font-semibold">Your Name</div>
+          <div class="text-xs opacity-60">Frontend Engineer • Designer</div>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-4">
+        <a href="#" onclick="showPage('home')" class="nav-link text-sm opacity-80 hover:opacity-100 underline-animated">Home</a>
+        <a href="#" onclick="showPage('about')" class="nav-link text-sm opacity-80 hover:opacity-100 underline-animated">About</a>
+        <a href="#" onclick="showPage('projects')" class="nav-link text-sm opacity-80 hover:opacity-100 underline-animated">Projects</a>
+        <a href="#" onclick="showPage('blog')" class="nav-link text-sm opacity-80 hover:opacity-100 underline-animated">Blog</a>
+        <a href="#" onclick="showPage('contact')" class="nav-link text-sm opacity-80 hover:opacity-100 underline-animated">Contact</a>
+        <button id="themeBtn" class="ml-3 px-3 py-1 rounded-md text-sm glass">
+          <i class="fa-solid fa-moon" id="themeIcon"></i>
+        </button>
+      </div>
+      <div class="md:hidden">
+        <button id="mobileMenuBtn" class="p-2 glass rounded-md"><i class="fa-solid fa-bars"></i></button>
+      </div>
+    </div>
+    <!-- mobile menu -->
+    <div id="mobileMenu" class="mt-3 hidden flex-col gap-2 px-1">
+      <a href="#" onclick="showPage('home')" class="block text-sm py-2">Home</a>
+      <a href="#" onclick="showPage('about')" class="block text-sm py-2">About</a>
+      <a href="#" onclick="showPage('projects')" class="block text-sm py-2">Projects</a>
+      <a href="#" onclick="showPage('blog')" class="block text-sm py-2">Blog</a>
+      <a href="#" onclick="showPage('contact')" class="block text-sm py-2">Contact</a>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="pt-36 pb-20 px-6 max-w-6xl mx-auto">
+    
+    <!-- HOME PAGE -->
+    <div id="homePage" class="page active">
+      <!-- HERO -->
+      <section id="hero" class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-12">
+        <div>
+          <p class="text-sm text-cyan-300/80 mb-2">Hello — I'm</p>
+          <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">Your Name<span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-300">.</span></h1>
+          <p class="mt-4 text-lg md:text-xl opacity-70 max-w-xl">I build delightful, high-performance websites and interfaces — with attention to detail, motion, and accessibility.</p>
+
+          <div class="mt-6 flex gap-3">
+            <button onclick="showPage('projects')" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl glass font-medium shadow-sm hover:scale-[1.02] transition-transform">View projects <i class="fa-solid fa-arrow-right text-sm"></i></button>
+            <button onclick="showPage('contact')" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-indigo-600/30 font-medium hover:bg-indigo-600/10 transition">Contact me</button>
+          </div>
+
+          <div class="mt-8 flex items-center gap-4 text-sm opacity-80">
+            <div class="flex items-center gap-2">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-green-500 to-emerald-400 flex items-center justify-center text-black font-bold">
+                <i class="fa-solid fa-briefcase text-sm"></i>
+              </div>
+              <div>
+                <div class="font-semibold">Available to work</div>
+                <div class="text-xs opacity-60">Freelance & full-time</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative">
+          <div id="heroCard" class="glass rounded-2xl p-6 max-w-md mx-auto">
+            <img src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="profile" class="w-32 h-32 rounded-full object-cover mx-auto shadow-lg" />
+            <h3 class="text-center mt-4 font-semibold text-xl typing">Designer • Developer</h3>
+            <p class="text-center mt-2 text-sm opacity-70">I turn ideas into polished products. I focus on performance, accessibility, and practical beauty.</p>
+
+            <div class="mt-4 flex justify-center gap-3">
+              <a href="#" class="p-3 rounded-lg glass hover:scale-110 transition-transform"><i class="fa-brands fa-github"></i></a>
+              <a href="#" class="p-3 rounded-lg glass hover:scale-110 transition-transform"><i class="fa-brands fa-linkedin"></i></a>
+              <a href="#" class="p-3 rounded-lg glass hover:scale-110 transition-transform"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+          </div>
+
+          <div class="absolute -right-6 -top-8 w-40 h-40 rounded-2xl glass flex items-center justify-center hover:rotate-3 transition-transform"> 
+            <div class="text-xs text-center">Available<br/>to work</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUICK STATS -->
+      <section class="mb-12">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="glass rounded-xl p-6 text-center">
+            <div class="text-2xl font-bold text-indigo-400" id="projectCount">0</div>
+            <div class="text-sm opacity-70 mt-1">Projects Completed</div>
+          </div>
+          <div class="glass rounded-xl p-6 text-center">
+            <div class="text-2xl font-bold text-cyan-400" id="experienceYears">0</div>
+            <div class="text-sm opacity-70 mt-1">Years Experience</div>
+          </div>
+          <div class="glass rounded-xl p-6 text-center">
+            <div class="text-2xl font-bold text-green-400" id="clientCount">0</div>
+            <div class="text-sm opacity-70 mt-1">Happy Clients</div>
+          </div>
+          <div class="glass rounded-xl p-6 text-center">
+            <div class="text-2xl font-bold text-purple-400" id="coffeeCount">0</div>
+            <div class="text-sm opacity-70 mt-1">Cups of Coffee</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURED PROJECTS -->
+      <section class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold">Featured Work</h2>
+          <button onclick="showPage('projects')" class="text-sm text-indigo-400 hover:text-indigo-300 transition">View all projects →</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="glass rounded-xl p-6 hover:scale-[1.02] transition-transform cursor-pointer">
+            <img class="project-img mb-4" src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="featured project" />
+            <h3 class="font-semibold text-lg">Project Spotlight</h3>
+            <p class="text-sm opacity-70 mt-2">A comprehensive web application with modern design patterns.</p>
+          </div>
+          <div class="glass rounded-xl p-6 hover:scale-[1.02] transition-transform cursor-pointer">
+            <img class="project-img mb-4" src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="featured project" />
+            <h3 class="font-semibold text-lg">Dashboard Excellence</h3>
+            <p class="text-sm opacity-70 mt-2">Analytics dashboard with real-time data visualization.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TESTIMONIALS -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-bold mb-6 text-center">What Clients Say</h2>
+        <div class="glass rounded-2xl p-8 max-w-4xl mx-auto">
+          <div id="testimonialCarousel" class="overflow-hidden">
+            <div class="flex transition-transform duration-500" id="testimonialSlider">
+              <div class="testimonial-slide text-center px-8">
+                <p class="text-lg italic opacity-80">"Exceptional work quality and attention to detail. The project exceeded our expectations."</p>
+                <div class="mt-4 font-semibold">Sarah Johnson</div>
+                <div class="text-sm opacity-60">CEO, TechStart</div>
+              </div>
+              <div class="testimonial-slide text-center px-8">
+                <p class="text-lg italic opacity-80">"Professional, timely, and creative. Would definitely work together again."</p>
+                <div class="mt-4 font-semibold">Mike Chen</div>
+                <div class="text-sm opacity-60">Product Manager, InnovaCorp</div>
+              </div>
+              <div class="testimonial-slide text-center px-8">
+                <p class="text-lg italic opacity-80">"Brought our vision to life with modern design and seamless functionality."</p>
+                <div class="mt-4 font-semibold">Emily Rodriguez</div>
+                <div class="text-sm opacity-60">Founder, Creative Agency</div>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-center gap-2 mt-6">
+            <button class="w-2 h-2 rounded-full bg-indigo-400 testimonial-dot active" onclick="goToTestimonial(0)"></button>
+            <button class="w-2 h-2 rounded-full bg-gray-500 testimonial-dot" onclick="goToTestimonial(1)"></button>
+            <button class="w-2 h-2 rounded-full bg-gray-500 testimonial-dot" onclick="goToTestimonial(2)"></button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ABOUT PAGE -->
+    <div id="aboutPage" class="page">
+      <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold mb-8">About Me</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div class="md:col-span-2">
+            <div class="glass rounded-2xl p-8">
+              <h2 class="text-2xl font-semibold mb-4">My Story</h2>
+              <p class="opacity-80 mb-4">I'm a passionate frontend developer with over 5 years of experience creating digital experiences that matter. My journey started with a curiosity about how beautiful websites come to life, and it has evolved into a career focused on crafting user-centered solutions.</p>
+              <p class="opacity-80 mb-4">I specialize in modern web technologies and have a deep appreciation for clean code, accessible design, and performance optimization. Whether working on a simple landing page or a complex web application, I bring the same level of attention to detail and commitment to excellence.</p>
+              <p class="opacity-80">When I'm not coding, you can find me exploring new design trends, contributing to open source projects, or enjoying a good cup of coffee while sketching out ideas for my next project.</p>
+            </div>
+          </div>
+          
+          <div>
+            <div class="glass rounded-2xl p-6 mb-6">
+              <img src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="profile" class="w-full rounded-lg mb-4" />
+              <div class="text-center">
+                <h3 class="font-semibold">Your Name</h3>
+                <p class="text-sm opacity-70">Frontend Engineer</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SKILLS WITH PROGRESS -->
+        <div class="glass rounded-2xl p-8 mb-12">
+          <h2 class="text-2xl font-semibold mb-6">Technical Skills</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div class="mb-4">
+                <div class="flex justify-between mb-2">
+                  <span>JavaScript / TypeScript</span>
+                  <span class="text-sm opacity-70">90%</span>
+                </div>
+                <div class="skill-progress">
+                  <div class="skill-progress-fill" data-width="90"></div>
+                </div>
+              </div>
+              <div class="mb-4">
+                <div class="flex justify-between mb-2">
+                  <span>React / Next.js</span>
+                  <span class="text-sm opacity-70">85%</span>
+                </div>
+                <div class="skill-progress">
+                  <div class="skill-progress-fill" data-width="85"></div>
+                </div>
+              </div>
+              <div class="mb-4">
+                <div class="flex justify-between mb-2">
+                  <span>CSS / Tailwind</span>
+                  <span class="text-sm opacity-70">95%</span>
+                </div>
+                <div class="skill-progress">
+                  <div class="skill-progress-fill" data-width="95"></div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="mb-4">
+                <div class="flex justify-between mb-2">
+                  <span>Node.js / Express</span>
+                  <span class="text-sm opacity-70">75%</span>
+                </div>
+                <div class="skill-progress">
+                  <div class="skill-progress-fill" data-width="75"></div>
+                </div>
+              </div>
+              <div class="mb-4">
+                <div class="flex justify-between mb-2">
+                  <span>UI/UX Design</span>
+                  <span class="text-sm opacity-70">80%</span>
+                </div>
+                <div class="skill-progress">
+                  <div class="skill-progress-fill" data-width="80"></div>
+                </div>
+              </div>
+              <div class="mb-4">
+                <div class="flex justify-between mb-2">
+                  <span>Performance Optimization</span>
+                  <span class="text-sm opacity-70">88%</span>
+                </div>
+                <div class="skill-progress">
+                  <div class="skill-progress-fill" data-width="88"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXPERIENCE TIMELINE -->
+        <div class="glass rounded-2xl p-8">
+          <h2 class="text-2xl font-semibold mb-6">Experience</h2>
+          <div class="space-y-6">
+            <div class="flex gap-4">
+              <div class="w-4 h-4 rounded-full bg-indigo-400 mt-1 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-semibold">Senior Frontend Developer</h3>
+                <p class="text-sm opacity-70">TechCorp Inc. • 2022 - Present</p>
+                <p class="text-sm opacity-80 mt-2">Leading frontend development for enterprise-level applications, mentoring junior developers, and implementing modern development practices.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="w-4 h-4 rounded-full bg-cyan-400 mt-1 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-semibold">Frontend Developer</h3>
+                <p class="text-sm opacity-70">StartupXYZ • 2020 - 2022</p>
+                <p class="text-sm opacity-80 mt-2">Built responsive web applications using React and modern CSS frameworks, collaborated with design teams to implement pixel-perfect interfaces.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="w-4 h-4 rounded-full bg-green-400 mt-1 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-semibold">Junior Web Developer</h3>
+                <p class="text-sm opacity-70">Agency ABC • 2019 - 2020</p>
+                <p class="text-sm opacity-80 mt-2">Developed client websites using HTML, CSS, and JavaScript, gained experience with CMS integration and performance optimization.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS PAGE -->
+    <div id="projectsPage" class="page">
+      <h1 class="text-4xl font-bold mb-8">Projects</h1>
+      
+      <!-- PROJECT FILTERS -->
+      <div class="flex flex-wrap gap-3 mb-8">
+        <button class="filter-btn active px-4 py-2 rounded-lg glass text-sm" data-filter="all">All</button>
+        <button class="filter-btn px-4 py-2 rounded-lg glass text-sm" data-filter="web">Web Apps</button>
+        <button class="filter-btn px-4 py-2 rounded-lg glass text-sm" data-filter="landing">Landing Pages</button>
+        <button class="filter-btn px-4 py-2 rounded-lg glass text-sm" data-filter="ecommerce">E-commerce</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectGrid">
+        <!-- Project Cards -->
+        <article class="project-card glass rounded-xl p-4 cursor-pointer" data-category="web" data-title="Analytics Dashboard" data-desc="A comprehensive analytics dashboard with real-time data visualization, custom charts, and user management features." data-tech="React • TypeScript • Chart.js • Tailwind" onclick="openProjectModal(this)">
+          <img class="project-img" src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="analytics dashboard" />
+          <h3 class="mt-3 font-semibold">Analytics Dashboard</h3>
+          <p class="text-xs opacity-70 mt-1">Real-time data visualization with interactive charts</p>
+          <div class="mt-3 text-xs opacity-60">React / TypeScript / Chart.js</div>
+          <div class="mt-2 flex gap-2">
+            <span class="px-2 py-1 rounded text-xs bg-indigo-500/20 text-indigo-300">Web App</span>
+            <span class="px-2 py-1 rounded text-xs bg-cyan-500/20 text-cyan-300">Frontend</span>
+          </div>
+        </article>
+
+        <article class="project-card glass rounded-xl p-4 cursor-pointer" data-category="landing" data-title="SaaS Landing Page" data-desc="Modern landing page for a SaaS platform with animated sections, testimonials, and conversion-focused design." data-tech="HTML • Tailwind • GSAP • JavaScript" onclick="openProjectModal(this)">
+          <img class="project-img" src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="saas landing" />
+          <h3 class="mt-3 font-semibold">SaaS Landing Page</h3>
+          <p class="text-xs opacity-70 mt-1">High-converting landing page with smooth animations</p>
+          <div class="mt-3 text-xs opacity-60">HTML / Tailwind / GSAP</div>
+          <div class="mt-2 flex gap-2">
+            <span class="px-2 py-1 rounded text-xs bg-green-500/20 text-green-300">Landing</span>
+            <span class="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-300">Animation</span>
+          </div>
+        </article>
+
+        <article class="project-card glass rounded-xl p-4 cursor-pointer" data-category="ecommerce" data-title="Fashion Store" data-desc="Complete e-commerce solution with product catalog, shopping cart, payment integration, and admin panel." data-tech="Next.js • Stripe • MongoDB • Tailwind" onclick="openProjectModal(this)">
+          <img class="project-img" src="https://images.unsplash.com/photo-1503602642458-232111445657?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="fashion store" />
+          <h3 class="mt-3 font-semibold">Fashion Store</h3>
+          <p class="text-xs opacity-70 mt-1">Full-stack e-commerce with payment integration</p>
+          <div class="mt-3 text-xs opacity-60">Next.js / Stripe / MongoDB</div>
+          <div class="mt-2 flex gap-2">
+            <span class="px-2 py-1 rounded text-xs bg-yellow-500/20 text-yellow-300">E-commerce</span>
+            <span class="px-2 py-1 rounded text-xs bg-red-500/20 text-red-300">Full-stack</span>
+          </div>
+        </article>
+
+        <article class="project-card glass rounded-xl p-4 cursor-pointer" data-category="web" data-title="Task Management App" data-desc="Collaborative task management application with real-time updates, team collaboration features, and progress tracking." data-tech="React • Socket.io • Node.js • PostgreSQL" onclick="openProjectModal(this)">
+          <img class="project-img" src="https://images.unsplash.com/photo-1611224923853-80b023f02d71?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="task management" />
+          <h3 class="mt-3 font-semibold">Task Management App</h3>
+          <p class="text-xs opacity-70 mt-1">Real-time collaborative project management tool</p>
+          <div class="mt-3 text-xs opacity-60">React / Socket.io / Node.js</div>
+          <div class="mt-2 flex gap-2">
+            <span class="px-2 py-1 rounded text-xs bg-indigo-500/20 text-indigo-300">Web App</span>
+            <span class="px-2 py-1 rounded text-xs bg-green-500/20 text-green-300">Real-time</span>
+          </div>
+        </article>
+
+        <article class="project-card glass rounded-xl p-4 cursor-pointer" data-category="landing" data-title="Restaurant Website" data-desc="Modern restaurant website with online menu, reservation system, and location information with beautiful food photography." data-tech="HTML • CSS • JavaScript • PHP" onclick="openProjectModal(this)">
+          <img class="project-img" src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="restaurant website" />
+          <h3 class="mt-3 font-semibold">Restaurant Website</h3>
+          <p class="text-xs opacity-70 mt-1">Beautiful restaurant site with online reservations</p>
+          <div class="mt-3 text-xs opacity-60">HTML / CSS / JavaScript</div>
+          <div class="mt-2 flex gap-2">
+            <span class="px-2 py-1 rounded text-xs bg-green-500/20 text-green-300">Landing</span>
+            <span class="px-2 py-1 rounded text-xs bg-orange-500/20 text-orange-300">Business</span>
+          </div>
+        </article>
+
+        <article class="project-card glass rounded-xl p-4 cursor-pointer" data-category="web" data-title="Social Media Dashboard" data-desc="Comprehensive social media management dashboard with analytics, post scheduling, and multi-platform integration." data-tech="Vue.js • Express • MongoDB • Chart.js" onclick="openProjectModal(this)">
+          <img class="project-img" src="https://images.unsplash.com/photo-1611262588024-d12430b98920?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="social dashboard" />
+          <h3 class="mt-3 font-semibold">Social Media Dashboard</h3>
+          <p class="text-xs opacity-70 mt-1">Multi-platform social media management tool</p>
+          <div class="mt-3 text-xs opacity-60">Vue.js / Express / MongoDB</div>
+          <div class="mt-2 flex gap-2">
+            <span class="px-2 py-1 rounded text-xs bg-indigo-500/20 text-indigo-300">Web App</span>
+            <span class="px-2 py-1 rounded text-xs bg-pink-500/20 text-pink-300">Social</span>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- BLOG PAGE -->
+    <div id="blogPage" class="page">
+      <h1 class="text-4xl font-bold mb-8">Blog & Articles</h1>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <article class="blog-card glass rounded-xl overflow-hidden cursor-pointer" onclick="openBlogModal('Modern CSS Techniques', 'Exploring the latest CSS features including container queries, cascade layers, and modern layout techniques that are changing how we build responsive interfaces.', '2024-09-15', 'css,frontend')">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="css article" class="w-full h-48 object-cover" />
+          <div class="p-6">
+            <div class="flex gap-2 mb-3">
+              <span class="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-300">CSS</span>
+              <span class="px-2 py-1 rounded text-xs bg-green-500/20 text-green-300">Frontend</span>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">Modern CSS Techniques</h3>
+            <p class="text-sm opacity-70 mb-3">Exploring container queries, cascade layers, and modern layout methods...</p>
+            <div class="text-xs opacity-60">September 15, 2024 • 5 min read</div>
+          </div>
+        </article>
+
+        <article class="blog-card glass rounded-xl overflow-hidden cursor-pointer" onclick="openBlogModal('React Performance Tips', 'Essential optimization techniques for React applications including memo, useMemo, useCallback, and code splitting strategies for better performance.', '2024-09-10', 'react,performance')">
+          <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="react article" class="w-full h-48 object-cover" />
+          <div class="p-6">
+            <div class="flex gap-2 mb-3">
+              <span class="px-2 py-1 rounded text-xs bg-cyan-500/20 text-cyan-300">React</span>
+              <span class="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-300">Performance</span>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">React Performance Tips</h3>
+            <p class="text-sm opacity-70 mb-3">Essential optimization techniques for faster React applications...</p>
+            <div class="text-xs opacity-60">September 10, 2024 • 8 min read</div>
+          </div>
+        </article>
+
+        <article class="blog-card glass rounded-xl overflow-hidden cursor-pointer" onclick="openBlogModal('Web Accessibility Guide', 'Complete guide to making your websites accessible to all users, covering ARIA labels, keyboard navigation, color contrast, and screen reader compatibility.', '2024-09-05', 'accessibility,ux')">
+          <img src="https://images.unsplash.com/photo-1573164713712-03790a178651?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="accessibility article" class="w-full h-48 object-cover" />
+          <div class="p-6">
+            <div class="flex gap-2 mb-3">
+              <span class="px-2 py-1 rounded text-xs bg-green-500/20 text-green-300">Accessibility</span>
+              <span class="px-2 py-1 rounded text-xs bg-orange-500/20 text-orange-300">UX</span>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">Web Accessibility Guide</h3>
+            <p class="text-sm opacity-70 mb-3">Making your websites accessible to all users with practical tips...</p>
+            <div class="text-xs opacity-60">September 5, 2024 • 12 min read</div>
+          </div>
+        </article>
+
+        <article class="blog-card glass rounded-xl overflow-hidden cursor-pointer" onclick="openBlogModal('JavaScript ES2024 Features', 'Overview of the latest JavaScript features including top-level await, private fields, and new array methods that improve developer productivity.', '2024-08-28', 'javascript,es2024')">
+          <img src="https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="javascript article" class="w-full h-48 object-cover" />
+          <div class="p-6">
+            <div class="flex gap-2 mb-3">
+              <span class="px-2 py-1 rounded text-xs bg-yellow-500/20 text-yellow-300">JavaScript</span>
+              <span class="px-2 py-1 rounded text-xs bg-red-500/20 text-red-300">ES2024</span>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">JavaScript ES2024 Features</h3>
+            <p class="text-sm opacity-70 mb-3">Latest JavaScript features that improve developer productivity...</p>
+            <div class="text-xs opacity-60">August 28, 2024 • 6 min read</div>
+          </div>
+        </article>
+
+        <article class="blog-card glass rounded-xl overflow-hidden cursor-pointer" onclick="openBlogModal('Design System Best Practices', 'How to build and maintain scalable design systems that work across teams, including component libraries, design tokens, and documentation strategies.', '2024-08-20', 'design,systems')">
+          <img src="https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="design system article" class="w-full h-48 object-cover" />
+          <div class="p-6">
+            <div class="flex gap-2 mb-3">
+              <span class="px-2 py-1 rounded text-xs bg-pink-500/20 text-pink-300">Design</span>
+              <span class="px-2 py-1 rounded text-xs bg-indigo-500/20 text-indigo-300">Systems</span>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">Design System Best Practices</h3>
+            <p class="text-sm opacity-70 mb-3">Building scalable design systems that work across teams...</p>
+            <div class="text-xs opacity-60">August 20, 2024 • 10 min read</div>
+          </div>
+        </article>
+
+        <article class="blog-card glass rounded-xl overflow-hidden cursor-pointer" onclick="openBlogModal('API Integration Patterns', 'Modern approaches to API integration including GraphQL, REST best practices, error handling, and caching strategies for better user experiences.', '2024-08-15', 'api,backend')">
+          <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=abcd" alt="api article" class="w-full h-48 object-cover" />
+          <div class="p-6">
+            <div class="flex gap-2 mb-3">
+              <span class="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-300">API</span>
+              <span class="px-2 py-1 rounded text-xs bg-gray-500/20 text-gray-300">Backend</span>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">API Integration Patterns</h3>
+            <p class="text-sm opacity-70 mb-3">Modern approaches to API integration and error handling...</p>
+            <div class="text-xs opacity-60">August 15, 2024 • 7 min read</div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- CONTACT PAGE -->
+    <div id="contactPage" class="page">
+      <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold mb-8">Get In Touch</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- CONTACT INFO -->
+          <div>
+            <div class="glass rounded-2xl p-8 mb-6">
+              <h2 class="text-2xl font-semibold mb-4">Let's Work Together</h2>
+              <p class="opacity-80 mb-6">I'm always interested in new opportunities and exciting projects. Whether you need a website, web application, or just want to chat about technology, I'd love to hear from you.</p>
+              
+              <div class="space-y-4">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-lg glass flex items-center justify-center">
+                    <i class="fa-solid fa-envelope text-indigo-400"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium">Email</div>
+                    <a href="mailto:you@domain.com" class="text-sm opacity-70 hover:opacity-100">you@domain.com</a>
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-lg glass flex items-center justify-center">
+                    <i class="fa-solid fa-phone text-cyan-400"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium">Phone</div>
+                    <div class="text-sm opacity-70">+1 (555) 123-4567</div>
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-lg glass flex items-center justify-center">
+                    <i class="fa-solid fa-location-dot text-green-400"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium">Location</div>
+                    <div class="text-sm opacity-70">Your City, Country</div>
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-lg glass flex items-center justify-center">
+                    <i class="fa-solid fa-clock text-purple-400"></i>
+                  </div>
+                  <div>
+                    <div class="font-medium">Response Time</div>
+                    <div class="text-sm opacity-70">Usually within 24 hours</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SOCIAL LINKS -->
+            <div class="glass rounded-2xl p-8">
+              <h3 class="font-semibold mb-4">Find Me Online</h3>
+              <div class="flex gap-4">
+                <a href="#" class="w-12 h-12 rounded-lg glass flex items-center justify-center hover:scale-110 transition-transform">
+                  <i class="fa-brands fa-github text-lg"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-lg glass flex items-center justify-center hover:scale-110 transition-transform">
+                  <i class="fa-brands fa-linkedin text-lg"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-lg glass flex items-center justify-center hover:scale-110 transition-transform">
+                  <i class="fa-brands fa-twitter text-lg"></i>
+                </a>
+                <a href="#" class="w-12 h-12 rounded-lg glass flex items-center justify-center hover:scale-110 transition-transform">
+                  <i class="fa-brands fa-dribbble text-lg"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTACT FORM -->
+          <div class="glass rounded-2xl p-8">
+            <form id="contactForm" class="space-y-6" onsubmit="handleForm(event)">
+              <div>
+                <label class="block text-sm font-medium mb-2">Name *</label>
+                <input required name="name" placeholder="Your full name" class="w-full p-3 rounded-lg glass border border-white/10 focus:border-indigo-400 focus:outline-none transition" />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium mb-2">Email *</label>
+                <input required type="email" name="email" placeholder="your@email.com" class="w-full p-3 rounded-lg glass border border-white/10 focus:border-indigo-400 focus:outline-none transition" />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium mb-2">Subject</label>
+                <input name="subject" placeholder="What's this about?" class="w-full p-3 rounded-lg glass border border-white/10 focus:border-indigo-400 focus:outline-none transition" />
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium mb-2">Message *</label>
+                <textarea required name="message" rows="6" placeholder="Tell me about your project..." class="w-full p-3 rounded-lg glass border border-white/10 focus:border-indigo-400 focus:outline-none transition resize-none"></textarea>
+              </div>
+              
+              <div class="flex items-center gap-4">
+                <button type="submit" class="px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 font-medium transition">
+                  <span id="submitText">Send Message</span>
+                  <i class="fa-solid fa-paper-plane ml-2"></i>
+                </button>
+                <div id="formStatus" class="text-sm opacity-70"></div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- FAQ SECTION -->
+        <div class="glass rounded-2xl p-8 mt-8">
+          <h2 class="text-2xl font-semibold mb-6">Frequently Asked Questions</h2>
+          <div class="space-y-4">
+            <div class="border-b border-white/10 pb-4">
+              <h3 class="font-medium mb-2">What's your typical project timeline?</h3>
+              <p class="text-sm opacity-70">Project timelines vary depending on complexity, but most websites take 2-4 weeks, while web applications can take 4-8 weeks. I provide detailed timelines during our initial consultation.</p>
+            </div>
+            <div class="border-b border-white/10 pb-4">
+              <h3 class="font-medium mb-2">Do you work with international clients?</h3>
+              <p class="text-sm opacity-70">Absolutely! I work with clients worldwide and am comfortable with different time zones. I use modern collaboration tools to ensure smooth communication throughout the project.</p>
+            </div>
+            <div class="border-b border-white/10 pb-4">
+              <h3 class="font-medium mb-2">What technologies do you specialize in?</h3>
+              <p class="text-sm opacity-70">I specialize in modern web technologies including React, Next.js, TypeScript, Tailwind CSS, and Node.js. I also have experience with various CMS platforms and e-commerce solutions.</p>
+            </div>
+            <div>
+              <h3 class="font-medium mb-2">Do you provide ongoing support?</h3>
+              <p class="text-sm opacity-70">Yes! I offer various support packages including bug fixes, content updates, performance monitoring, and feature enhancements. We can discuss the best option for your needs.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-12 text-center opacity-70 text-sm">© <span id="year"></span> Your Name — Built with ❤️</footer>
+  </main>
+
+  <!-- PROJECT MODAL -->
+  <div id="projectModal" class="fixed inset-0 hidden items-center justify-center z-60 bg-black/60 p-4">
+    <div class="max-w-4xl w-full glass rounded-2xl p-8 relative max-h-[90vh] overflow-y-auto">
+      <button id="closeModal" class="absolute right-6 top-6 p-2 rounded-md glass hover:scale-110 transition-transform"><i class="fa-solid fa-xmark"></i></button>
+      <h3 id="modalTitle" class="text-2xl font-bold mb-2"></h3>
+      <p id="modalTech" class="text-sm opacity-70 mb-4"></p>
+      <p id="modalDesc" class="mb-6 opacity-80 text-lg"></p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <h4 class="font-semibold mb-3">Key Features</h4>
+          <ul id="modalFeatures" class="space-y-2 text-sm opacity-80">
+            <li>• Responsive design across all devices</li>
+            <li>• Performance optimized for fast loading</li>
+            <li>• Accessible UI following WCAG guidelines</li>
+            <li>• Modern, clean user interface</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-3">Technologies Used</h4>
+          <div id="modalTechStack" class="flex flex-wrap gap-2">
+            <!-- Dynamic tech stack badges -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex gap-4">
+        <a id="modalView" href="#" class="px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-700 hover:to-cyan-700 font-medium transition">
+          <i class="fa-solid fa-external-link mr-2"></i>View Live
+        </a>
+        <a id="modalCode" href="#" class="px-6 py-3 rounded-lg border border-white/20 hover:bg-white/5 font-medium transition">
+          <i class="fa-brands fa-github mr-2"></i>Source Code
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOG MODAL -->
+  <div id="blogModal" class="fixed inset-0 hidden items-center justify-center z-60 bg-black/60 p-4">
+    <div class="max-w-4xl w-full glass rounded-2xl p-8 relative max-h-[90vh] overflow-y-auto">
+      <button id="closeBlogModal" class="absolute right-6 top-6 p-2 rounded-md glass hover:scale-110 transition-transform"><i class="fa-solid fa-xmark"></i></button>
+      <h3 id="blogModalTitle" class="text-2xl font-bold mb-2"></h3>
+      <p id="blogModalMeta" class="text-sm opacity-70 mb-6"></p>
+      <div id="blogModalContent" class="prose prose-invert max-w-none">
+        <!-- Blog content will be inserted here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Utility functions
+    const q = s => document.querySelector(s);
+    const qs = s => document.querySelectorAll(s);
+    
+    // State management
+    let currentPage = 'home';
+    let currentTestimonial = 0;
+    let isDarkMode = true;
+
+    // Initialize
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Page navigation
+    function showPage(page) {
+      // Hide all pages
+      qs('.page').forEach(p => {
+        p.classList.remove('active');
+        setTimeout(() => p.style.display = 'none', 300);
+      });
+      
+      // Show target page
+      setTimeout(() => {
+        const targetPage = q(`#${page}Page`);
+        if (targetPage) {
+          targetPage.style.display = 'block';
+          setTimeout(() => targetPage.classList.add('active'), 50);
+          currentPage = page;
+          
+          // Trigger page-specific animations
+          if (page === 'about') {
+            animateSkillBars();
+          }
+        }
+      }, 300);
+
+      // Close mobile menu
+      q('#mobileMenu').classList.add('hidden');
+      
+      // Update nav active state
+      qs('.nav-link').forEach(link => link.classList.remove('text-indigo-400'));
+      event.target.classList.add('text-indigo-400');
+    }
+
+    // Mobile menu toggle
+    q('#mobileMenuBtn').addEventListener('click', () => {
+      q('#mobileMenu').classList.toggle('hidden');
+    });
+
+    // Theme toggle
+    q('#themeBtn').addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      isDarkMode = !isDarkMode;
+      
+      const icon = q('#themeIcon');
+      icon.className = isDarkMode ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    });
+
+    // Progress bar on scroll
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      q('#progressBar').style.transform = `scaleX(${scrolled / 100})`;
+    });
+
+    // Animated counters
+    function animateCounters() {
+      const counters = [
+        { element: q('#projectCount'), target: 50, suffix: '+' },
+        { element: q('#experienceYears'), target: 5, suffix: '+' },
+        { element: q('#clientCount'), target: 30, suffix: '+' },
+        { element: q('#coffeeCount'), target: 1000, suffix: '+' }
+      ];
+
+      counters.forEach(counter => {
+        let count = 0;
+        const increment = counter.target / 50;
+        const timer = setInterval(() => {
+          count += increment;
+          if (count >= counter.target) {
+            count = counter.target;
+            clearInterval(timer);
+          }
+          counter.element.textContent = Math.floor(count) + counter.suffix;
+        }, 30);
+      });
+    }
+
+    // Testimonial carousel
+    function goToTestimonial(index) {
+      currentTestimonial = index;
+      const slider = q('#testimonialSlider');
+      slider.style.transform = `translateX(-${index * 100}%)`;
+      
+      qs('.testimonial-dot').forEach((dot, i) => {
+        dot.classList.toggle('bg-indigo-400', i === index);
+        dot.classList.toggle('bg-gray-500', i !== index);
+        dot.classList.toggle('active', i === index);
+      });
+    }
+
+    // Auto-rotate testimonials
+    setInterval(() => {
+      const nextIndex = (currentTestimonial + 1) % 3;
+      goToTestimonial(nextIndex);
+    }, 5000);
+
+    // Project filtering
+    qs('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        
+        // Update active button
+        qs('.filter-btn').forEach(b => b.classList.remove('active', 'bg-indigo-600/20'));
+        btn.classList.add('active', 'bg-indigo-600/20');
+        
+        // Filter projects
+        qs('.project-card').forEach(card => {
+          const category = card.dataset.category;
+          const shouldShow = filter === 'all' || category === filter;
+          
+          if (shouldShow) {
+            card.style.display = 'block';
+            gsap.fromTo(card, {opacity: 0, y: 20}, {opacity: 1, y: 0, duration: 0.3});
+          } else {
+            gsap.to(card, {opacity: 0, y: -20, duration: 0.3, onComplete: () => {
+              card.style.display = 'none';
+            }});
+          }
+        });
+      });
+    });
+
+    // Skill bar animations
+    function animateSkillBars() {
+      qs('.skill-progress-fill').forEach(bar => {
+        const width = bar.dataset.width;
+        gsap.to(bar, {
+          scaleX: width / 100,
+          duration: 1,
+          delay: 0.2,
+          ease: 'power3.out'
+        });
+      });
+    }
+
+    // Project modal
+    function openProjectModal(el) {
+      const title = el.dataset.title;
+      const desc = el.dataset.desc;
+      const tech = el.dataset.tech;
+      
+      q('#modalTitle').textContent = title;
+      q('#modalDesc').textContent = desc;
+      q('#modalTech').textContent = tech;
+      
+      // Generate tech stack badges
+      const techStack = tech.split(' • ');
+      const techContainer = q('#modalTechStack');
+      techContainer.innerHTML = techStack.map(t => 
+        `<span class="px-3 py-1 rounded-lg glass text-sm">${t}</span>`
+      ).join('');
+      
+      q('#projectModal').classList.remove('hidden');
+      q('#projectModal').style.display = 'flex';
+      gsap.fromTo('#projectModal .glass', {y: 40, opacity: 0}, {y: 0, opacity: 1, duration: 0.45, ease: 'power3.out'});
+    }
+
+    // Blog modal
+    function openBlogModal(title, content, date, tags) {
+      q('#blogModalTitle').textContent = title;
+      q('#blogModalMeta').textContent = `${date} • ${tags.split(',').map(tag => tag.charAt(0).toUpperCase() + tag.slice(1)).join(', ')}`;
+      q('#blogModalContent').innerHTML = `<p class="text-lg leading-relaxed">${content}</p>`;
+      
+      q('#blogModal').classList.remove('hidden');
+      q('#blogModal').style.display = 'flex';
+      gsap.fromTo('#blogModal .glass', {y: 40, opacity: 0}, {y: 0, opacity: 1, duration: 0.45, ease: 'power3.out'});
+    }
+
+    // Close modals
+    q('#closeModal').addEventListener('click', () => {
+      q('#projectModal').classList.add('hidden');
+      q('#projectModal').style.display = 'none';
+    });
+    
+    q('#closeBlogModal').addEventListener('click', () => {
+      q('#blogModal').classList.add('hidden');
+      q('#blogModal').style.display = 'none';
+    });
+
+    // Close modals on backdrop click
+    q('#projectModal').addEventListener('click', e => {
+      if (e.target === q('#projectModal')) {
+        q('#projectModal').classList.add('hidden');
+        q('#projectModal').style.display = 'none';
+      }
+    });
+    
+    q('#blogModal').addEventListener('click', e => {
+      if (e.target === q('#blogModal')) {
+        q('#blogModal').classList.add('hidden');
+        q('#blogModal').style.display = 'none';
+      }
+    });
+
+    // Contact form handling
+    function handleForm(e) {
+      e.preventDefault();
+      const status = q('#formStatus');
+      const submitBtn = q('#submitText');
+      
+      submitBtn.textContent = 'Sending...';
+      status.textContent = '';
+      
+      // Simulate form submission
+      setTimeout(() => {
+        submitBtn.textContent = 'Send Message';
+        status.textContent = 'Message sent successfully! I\'ll get back to you soon.';
+        status.className = 'text-sm text-green-400';
+        e.target.reset();
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          status.textContent = '';
+          status.className = 'text-sm opacity-70';
+        }, 5000);
+      }, 1500);
+    }
+
+    // Search functionality (for blog)
+    function initSearchFunctionality() {
+      const searchInput = document.createElement('input');
+      searchInput.className = 'w-full max-w-md mx-auto mb-6 p-3 rounded-lg glass border border-white/10 focus:border-indigo-400 focus:outline-none transition';
+      searchInput.placeholder = 'Search articles...';
+      searchInput.type = 'text';
+      
+      const blogPage = q('#blogPage');
+      const blogGrid = blogPage.querySelector('.grid');
+      blogPage.insertBefore(searchInput, blogGrid);
+      
+      searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const articles = qs('.blog-card');
+        
+        articles.forEach(article => {
+          const title = article.querySelector('h3').textContent.toLowerCase();
+          const content = article.querySelector('p').textContent.toLowerCase();
+          const shouldShow = title.includes(searchTerm) || content.includes(searchTerm);
+          
+          if (shouldShow) {
+            article.style.display = 'block';
+            gsap.fromTo(article, {opacity: 0}, {opacity: 1, duration: 0.3});
+          } else {
+            gsap.to(article, {opacity: 0, duration: 0.3, onComplete: () => {
+              article.style.display = 'none';
+            }});
+          }
+        });
+      });
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Close modals on Escape
+      if (e.key === 'Escape') {
+        q('#projectModal').classList.add('hidden');
+        q('#projectModal').style.display = 'none';
+        q('#blogModal').classList.add('hidden');
+        q('#blogModal').style.display = 'none';
+      }
+      
+      // Navigation shortcuts (Alt + number)
+      if (e.altKey) {
+        switch(e.key) {
+          case '1': showPage('home'); break;
+          case '2': showPage('about'); break;
+          case '3': showPage('projects'); break;
+          case '4': showPage('blog'); break;
+          case '5': showPage('contact'); break;
+        }
+      }
+    });
+
+    // Entrance animations with GSAP
+    window.addEventListener('load', () => {
+      // Nav animation
+      gsap.from('#nav', {y: -40, opacity: 0, duration: 0.6, ease: 'power3.out'});
+      
+      // Hero animations
+      gsap.from('#hero h1', {y: 30, opacity: 0, duration: 0.8, delay: 0.15, ease: 'power3.out'});
+      gsap.from('#hero p, #hero .mt-6', {y: 20, opacity: 0, duration: 0.7, delay: 0.25, stagger: 0.08});
+      
+      // Stats counter animation
+      setTimeout(animateCounters, 1000);
+      
+      // Project cards animation
+      gsap.utils.toArray('.project-card').forEach((card, i) => {
+        gsap.from(card, {y: 18, opacity: 0, duration: 0.6, delay: 0.2 + i * 0.12, ease: 'power3.out'});
+      });
+      
+      // Blog cards animation
+      gsap.utils.toArray('.blog-card').forEach((card, i) => {
+        gsap.from(card, {y: 18, opacity: 0, duration: 0.6, delay: 0.2 + i * 0.12, ease: 'power3.out'});
+      });
+      
+      // Initialize search
+      initSearchFunctionality();
+    });
+
+    // Subtle hover parallax on hero card
+    const heroCard = q('#heroCard');
+    if (heroCard) {
+      heroCard.addEventListener('mousemove', (e) => {
+        const r = heroCard.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        gsap.to(heroCard, {
+          rotationY: x * 6,
+          rotationX: -y * 6,
+          transformPerspective: 800,
+          transformOrigin: 'center',
+          duration: 0.6
+        });
+      });
+      
+      heroCard.addEventListener('mouseleave', () => {
+        gsap.to(heroCard, {rotationY: 0, rotationX: 0, duration: 0.6});
+      });
+    }
+
+    // Intersection Observer for scroll animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          gsap.to(entry.target, {
+            y: 0,
+            opacity: 1,
+            duration: 0.6,
+            ease: 'power3.out'
+          });
+        }
+      });
+    }, observerOptions);
+
+    // Observe elements for scroll animations
+    qs('.glass').forEach(el => {
+      gsap.set(el, {y: 20, opacity: 0});
+      observer.observe(el);
+    });
+
+    // Smooth scroll behavior for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Reduce motion preference respect
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.globalTimeline.timeScale(3);
+    }
+
+    // Add loading state management
+    document.addEventListener('DOMContentLoaded', () => {
+      // Hide loading spinner if present
+      const loader = document.querySelector('.loader');
+      if (loader) {
+        gsap.to(loader, {opacity: 0, duration: 0.5, onComplete: () => loader.remove()});
+      }
+    });
+
+    // Performance monitoring
+    if ('performance' in window) {
+      window.addEventListener('load', () => {
+        const perfData = performance.getEntriesByType('navigation')[0];
+        if (perfData) {
+          console.log(`Page load time: ${perfData.loadEventEnd - perfData.loadEventStart}ms`);
+        }
+      });
+    }
+
+    // Service Worker registration (for PWA capabilities)
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        // Service worker would be registered here in a real implementation
+        console.log('Service Worker support detected');
+      });
+    }
+
+    // Add custom cursor effect
+    let cursor = null;
+    if (window.innerWidth > 768) {
+      cursor = document.createElement('div');
+      cursor.className = 'fixed w-4 h-4 bg-gradient-to-r from-indigo-400 to-cyan-400 rounded-full pointer-events-none z-50 transition-transform duration-100 ease-out';
+      cursor.style.transform = 'translate(-50%, -50%)';
+      document.body.appendChild(cursor);
+
+      document.addEventListener('mousemove', (e) => {
+        if (cursor) {
+          cursor.style.left = e.clientX + 'px';
+          cursor.style.top = e.clientY + 'px';
+        }
+      });
+
+      // Scale cursor on hover over interactive elements
+      qs('a, button, .cursor-pointer').forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          if (cursor) cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
+        });
+        el.addEventListener('mouseleave', () => {
+          if (cursor) cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+      });
+    }
+
+    // Initialize everything
+    console.log('Enhanced Portfolio loaded successfully! 🚀');
+  </script>
+</body>
+</html>
