@@ -1,0 +1,29 @@
+name: portfolio deployment 
+
+# specifying the event that will trigger the workflow after push to the main branch
+on: 
+    push:
+        branches:
+        - main
+
+# jobs is the keyword        
+jobs:
+    # You can change its name to anything you want
+    build-and-deploy: 
+        # the type of environment to use
+        runs-on: ubuntu-latest
+        steps: 
+        - name: Checkout the code 
+          uses: actions/checkout@v3
+
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v2
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}     # AWS ID added in the GitHub secrets for the particular repository
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS secret key added in the GitHub secrets
+            aws-region: us-east-1
+        
+        - name: deploy static site to S3 bucket
+          run: aws s3 sync . s3://ysampleportfoliobucket  --delete --exclude ".git/*" --exclude ".github/*" --exclude "README.md" --exclude ".gitignore"
+                    # sync command is used to sync the files from the local system to the S3 bucket
+        
